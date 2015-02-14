@@ -1,0 +1,87 @@
+---
+title: "Tarea 4"
+author: "Federico Rebolledo 135700; Santin Gallardo 135936"
+output: html_document
+---
+
+#Tipos de Cambio MXN-USD de 2006 a 2014
+
+La información se obtuvo de la página del Banco de México el día 28 de agosto de 2014.
+
+```{r Lectura de Datos}
+directorio<-"C:\\Users\\Federico\\Documents\\R Markdown\\Tarea4"
+setwd(directorio)
+TC.Banxico<-read.table("./tipoCambioBanxico.txt",
+                       sep = "|",
+                       header = TRUE,
+                       stringsAsFactors = FALSE)
+```
+
+```{r Transformación}
+TC.Banxico$Fecha.DOF<-as.Date(TC.Banxico$Fecha.DOF,
+                             format = "%d/%m/%Y")
+temporal<-as.POSIXlt(TC.Banxico$Fecha.DOF)
+TC.Banxico$año<-unclass(temporal)$year+1900
+```
+
+```{r Eliminación Datos Faltantes}
+TC.Banxico.existentes<-subset(TC.Banxico, TC !="N/E")
+TC.Banxico.existentes$TC<-as.numeric(TC.Banxico.existentes$TC)
+str(TC.Banxico.existentes)
+```
+
+###Histogramas
+
+```{r Histogramas}
+par(mfrow = c(3, 3))
+for(i in 2006:2014){
+  tc<-subset(TC.Banxico.existentes, año==i)
+  hist(tc$TC,
+       col = "blue",
+       breaks = seq(9.9, 15.4, length.out = 30),
+       xlim = c(9.9,15.4),
+       ylim = c(0, 120),
+       ylab="Frecuencia",
+       xlab="Tipo de cambio del dólar de E.U.A.",
+       main=i)
+  media<-mean(tc$TC, na.rm=TRUE)
+  mediana<-median(tc$TC, na.rm=TRUE)
+  abline(v = media, col = "red", lwd=3)
+  abline(v = mediana, col = "black", lwd=3)
+}
+```
+
+Los dos primeros años el tipo de cambio se mantuvo alrededor de los once pesos. En 2008 con la crisis se observa una alta varianza en los datos alcanzando tipos de cambio cercanos a los $14. Los dos siguientes años fueron periodos de recesión y recuperación, volviendo a un tipo de cambio más estable hasta 2010. Pero en 2011 con los cambios en los precios de petróleo se volvieron a observar fuertes variaciones en los tipos de cambio generando que la media pasara a colocarse alrededor de los $13 para los tres años siguientes observándose la mayor estabilidad en 2014.
+
+###Diagrama de Caja y Brazos
+
+```{r Diagrama de Caja y Brazos}
+par(mfrow=c(1, 1), las =3)
+with(TC.Banxico.existentes,
+     boxplot(TC~factor(año),
+             range=0,
+             varwidth=TRUE))
+```
+
+Los años 2006 y 2007 se muestran muy estables con el dolar alrededor de los 11 pesos, como vimos en el histograma. 2008 fue el año que se vió más cambiante debido a la crisis. El último cuartil del 2008 abarca casi 3 pesos diferentes, que muestra la volatilidad que se vivió en ese periodo. 2009 también se muestra como un año sin estabilidad, y se muestra ya un incremento definitivo en el precio del dolar conforme al año pasado. Los años restantes el dolar se muestra estable con unas fluctuaciones normales. El 2014 se muestra como el año más estable con precios alrededor de 13 pesos. 
+En estos diagramas se muestra  un poco más claro la dispersión de los precios del dolar que en el histograma. 
+
+#Distribución Normal
+
+```{r Gráfica Normal}
+normal<-function(x)
+  {
+  (1/sqrt(2*pi))*(exp((-x^2)/2))
+  }
+curve(normal,
+      from=-4, to=4,
+      xlab="x", ylab="f(x)",
+      col="red",
+      main=expression(paste("Gráfica de la función",(1/sqrt(2*pi))*(e^(-x^2/2)))
+                      ))
+
+abline(v=0, col="black")
+points(0, normal(0), col="blue", pch=16)
+text(1, normal(0), "Valor Máximo")
+```
+
